@@ -1,0 +1,41 @@
+name: Deploy Spring Boot + React App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #  Download backend JAR
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./email-writer-kt/target
+
+      #  Download frontend build
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./email-frontend-project/dist
+
+      #  Build and push Docker image
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t karantaragi26/karantaragi:latest .
+
+      - name: Push Docker image
+        run: docker push karantaragi26/karantaragi:latest
