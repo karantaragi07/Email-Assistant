@@ -3,9 +3,6 @@ import com.email.email_writer_kt.model.MailGeneratorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,7 +22,7 @@ public class MailGeneratorService {
     }
 
     public String generateMailReply(MailGeneratorModel mailGeneratorModel) {
-        //build promp
+        //build prompt
         String prompt = buildPrompt(mailGeneratorModel);
         //create raw json format
         String requestBody = String.format("""

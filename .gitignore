@@ -1,0 +1,50 @@
+# ========================
+# Spring Boot / Java
+# ========================
+backend/target/
+backend/.idea/
+backend/.mvn/
+backend/*.iml
+backend/src/main/resources/application.properties
+backend/src/main/resources/application.yml
+
+# Maven
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# ========================
+# React / Node.js
+# ========================
+frontend/node_modules/
+frontend/.env
+frontend/build/
+frontend/.DS_Store
+frontend/.cache/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# Chrome Extension
+# ========================
+extension/dist/
+extension/node_modules/
+extension/.DS_Store
+
+# ========================
+# General
+# ========================
+*.log
+*.swp
+.DS_Store
+.idea/
+.vscode/
+s
