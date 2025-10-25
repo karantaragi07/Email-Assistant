@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  # 1️⃣ Build React Frontend
+
   frontend-build:
     runs-on: ubuntu-latest
     steps:
@@ -31,7 +31,7 @@ jobs:
           path: email-frontend-project/dist
 
 
-  # 2️⃣ Build Spring Boot Backend
+  
   backend-build:
     runs-on: ubuntu-latest
     needs: frontend-build
@@ -62,7 +62,7 @@ jobs:
           path: email-writer-kt/target/*.jar
 
 
-  # 3️⃣ Deploy: Build and push Docker image
+ 
   deploy:
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-build]
