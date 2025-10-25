@@ -1,20 +1,14 @@
-name: CI - React + Spring Boot
+name: CI/CD - React + Spring Boot
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
+  # 1️⃣ Build React Frontend
   frontend-build:
-    name: Build React Frontend
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./email-frontend-project
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,26 +19,22 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Build React frontend
-        run: npm run build
+        run: |
+          cd email-frontend-project
+          npm ci
+          npm run build
 
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: ./email-frontend-project/dist
+          path: email-frontend-project/dist
 
+
+  # 2️⃣ Build Spring Boot Backend
   backend-build:
-    name: Build Spring Boot Backend
     runs-on: ubuntu-latest
     needs: frontend-build
-
-    defaults:
-      run:
-        working-directory: ./email-writer-kt
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,7 +47,9 @@ jobs:
           cache: maven
 
       - name: Build Spring Boot backend
-        run: mvn clean package -DskipTests
+        run: |
+          cd email-writer-kt
+          mvn clean package -DskipTests
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_SECRET: ${{ secrets.GEMINI_API_SECRET }}
@@ -67,4 +59,43 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
-          path: ./email-writer-kt/target/*.jar
+          path: email-writer-kt/target/*.jar
+
+
+  # 3️⃣ Deploy: Build and push Docker image
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./email-writer-kt/target
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./email-frontend-project/dist
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME=karantaragi26/karantaragi
+          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          IMAGE_NAME=karantaragi26/karantaragi
+          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ github.sha }}
