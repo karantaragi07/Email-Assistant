@@ -42,7 +42,7 @@ Key Features:
 
 ### Backend
 ```bash
-cd backend
+cd email-writer-kt
 mvn spring-boot:run
 ```
 ### Frontend
@@ -64,17 +64,17 @@ npm start
 ```bash
 Smart-Email-Assistant/
 │
-├─ backend/ (Spring Boot)
+├─ email-writer-kt/ (Spring Boot)
 │   ├─ controller/
 │   ├─ model/
 │   └─ service/
 │
-├─ frontend/ (React + Material UI)
+├─ email-frontend-project/ (React + Material UI)
 │   ├─ components/
 │   ├─ App.js
 │   └─ index.js
 │
-├─ chrome-extension/
+├─ hello-world-ext/
 │   ├─ manifest.json
 │   └─ content.js
 │
