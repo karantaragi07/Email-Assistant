@@ -7,35 +7,44 @@ on:
 
 jobs:
   deploy:
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      #  Download backend JAR
+      # Step 2: Download backend artifact (Spring Boot JAR)
       - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: ./email-writer-kt/target
 
-      #  Download frontend build
+      # Step 3: Download frontend artifact (React build)
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: ./email-frontend-project/dist
 
-      #  Build and push Docker image
+      # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Step 5: Build Docker image
       - name: Build Docker image
-        run: docker build -t karantaragi26/karantaragi:latest .
+        run: |
+          IMAGE_NAME=karantaragi26/karantaragi
+          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
 
+      # Step 6: Push Docker image to Docker Hub
       - name: Push Docker image
-        run: docker push karantaragi26/karantaragi:latest
+        run: |
+          IMAGE_NAME=karantaragi26/karantaragi
+          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ github.sha }}
