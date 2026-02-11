@@ -31,7 +31,6 @@ jobs:
           path: email-frontend-project/dist
 
 
-  
   backend-build:
     runs-on: ubuntu-latest
     needs: frontend-build
@@ -62,10 +61,10 @@ jobs:
           path: email-writer-kt/target/*.jar
 
 
- 
-  deploy:
+  # NEW JOB — added
+  api-tests:
     runs-on: ubuntu-latest
-    needs: [frontend-build, backend-build]
+    needs: backend-build
 
     steps:
       - name: Checkout repository
@@ -75,27 +74,36 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
-          path: ./email-writer-kt/target
+          path: ./app
 
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: ./email-frontend-project/dist
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build Docker image
+      - name: Run Spring Boot app for testing
         run: |
-          IMAGE_NAME=karantaragi26/karantaragi
-          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
+          java -jar ./app/*.jar &
+          sleep 25
 
-      - name: Push Docker image
+      - name: Install Postman CLI
         run: |
-          IMAGE_NAME=karantaragi26/karantaragi
-          docker push $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:${{ github.sha }}
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Authenticate Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
+      - name: Run Smart Email Assistant Collection
+        run: |
+          postman collection run ${{ secrets.POSTMAN_COLLECTION_ID }} \
+            --env-var baseUrl=http://localhost:8080 \
+            --reporters cli,junit,html \
+            --reporter-junit-export reports/junit.xml \
+            --reporter-html-export reports/report.html \
+            --bail
+
+      - name: Upload Postman Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-test-report
+          path: reports/
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build, api-tests]
